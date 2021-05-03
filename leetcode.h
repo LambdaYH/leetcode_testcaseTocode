@@ -62,7 +62,7 @@ namespace leetcode
     leetcode::ListNode *LinkedList(std::initializer_list<int> nodes)
     {
         leetcode::ListNode *head = new ListNode();
-        leetcode::ListNode pseudoHead = head;
+        leetcode::ListNode *pseudoHead = head;
         for (const auto &nodeVal : nodes)
         {
             head->next = new ListNode(nodeVal);
