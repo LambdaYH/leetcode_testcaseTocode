@@ -2,12 +2,23 @@
 #ifndef LEETCODE_H
 #define LEETCODE_H
 
-#include <initializer_list>
 #include <queue>
+#include <string>
+#include <vector>
+#include <memory>
 /**
  * 
- * DataStruct's in leetcode
+ * Tree(string) ： return root of Tree
  * 
+ * LinkedListNode(string) : return head of LinkedListNode
+ * 
+ * 
+*/
+
+/**
+ *
+ * DataStruct's in leetcode
+ *
 */
 namespace leetcode
 {
@@ -29,44 +40,127 @@ namespace leetcode
         ListNode(int x, ListNode *next) : val(x), next(next) {}
     };
 }
-
 /**
- * 
- * Conversion functions
- * 
+ *
+ * some functions
+ *
 */
 namespace leetcode
 {
-    leetcode::TreeNode *Tree(std::initializer_list<int> nodes)
+    bool isDigitalOrCharacter(const char &ch)
     {
-        std::queue<leetcode::TreeNode> q;
+        return ('0' <= ch && '9' >= ch) || ('a' <= ch && 'z' >= ch) || ch == '-';
+    }
+
+    bool isSplitCondition(const char &ch)
+    {
+        return ch == ',' || ch == ']';
+    }
+
+    template <typename T>
+    void eraseQueue(std::queue<T> &q)
+    {
+        while (!q.empty())
+            q.pop();
+    }
+
+    std::vector<std::shared_ptr<int>> parseString(std::string &s)
+    {
+        std::queue<char> cache;
+        std::vector<std::shared_ptr<int>> res;
+        auto &begin = s.begin();
+        auto &end = s.end() - 1;
+        while (*begin != '[')
+            ++begin;
+        while (*end != ']')
+            --end;
+        ++begin;
+        for (; begin != end + 1; ++begin)
+        {
+            if (isSplitCondition(*begin))
+            {
+                int realNum = 0;
+                int positive = 1;
+                if (cache.empty())
+                    return {};
+                if (cache.front() == '-')
+                {
+                    positive = -1;
+                    cache.pop();
+                }
+                while (!cache.empty())
+                {
+                    realNum = realNum * 10 + static_cast<int>(cache.front() - '0');
+                    cache.pop();
+                }
+                if (realNum == 69560) // null
+                    res.push_back(nullptr);
+                else
+                    res.push_back(std::make_shared<int>(realNum * positive));
+            }
+            else if (isDigitalOrCharacter(*begin))
+            {
+                cache.push(*begin);
+            }
+        }
+        return res;
+    }
+}
+/**
+ *
+ * Conversion functions
+ *
+*/
+namespace leetcode
+{
+    leetcode::TreeNode *Tree(std::string e)
+    {
+        std::queue<leetcode::TreeNode *> q;
+        auto nodes = parseString(e);
         leetcode::TreeNode *root = nullptr;
-        for (const auto &nodeVal : nodes)
+        bool leftNotIn = true;
+        for (const auto &node : nodes)
         {
             if (q.empty())
-                q.push(root = new leetcode::TreeNode(nodeVal));
+                q.push(root = new leetcode::TreeNode(*node));
             else
             {
                 auto curNode = q.front();
-                if (!curNode->left)
-                    q.push(curNode->left = new leetcode::TreeNode(nodeVal));
+                if (!curNode->left && leftNotIn)
+                {
+                    if (node)
+                        q.push(curNode->left = new leetcode::TreeNode(*node));
+                    else
+                        curNode->left = nullptr;
+                    leftNotIn = false;
+                }
                 else if (!curNode->right)
                 {
-                    q.push(curNode->right = new leetcode::TreeNode(nodeVal));
+                    if (node)
+                        q.push(curNode->right = new leetcode::TreeNode(*node));
+                    else
+                        curNode->right = nullptr;
                     q.pop();
+                    leftNotIn = true;
                 }
             }
         }
         return root;
     }
-    leetcode::ListNode *LinkedList(std::initializer_list<int> nodes)
+    leetcode::ListNode *LinkedList(std::string e)
     {
         leetcode::ListNode *head = new ListNode();
         leetcode::ListNode *pseudoHead = head;
-        for (const auto &nodeVal : nodes)
+        auto nodes = parseString(e);
+        for (const auto &node : nodes)
         {
-            head->next = new ListNode(nodeVal);
-            head = head->next;
+            if (node)
+            {
+                head->next = new ListNode(*node);
+                head = head->next;
+            }
+            else
+                return nullptr;
         }
         auto res = pseudoHead->next;
         delete pseudoHead;
