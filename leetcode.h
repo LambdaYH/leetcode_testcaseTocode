@@ -68,8 +68,8 @@ namespace leetcode
     {
         std::queue<char> cache;
         std::vector<std::shared_ptr<int>> res;
-        auto &begin = s.begin();
-        auto &end = s.end() - 1;
+        auto begin = s.begin();
+        auto end = s.end() - 1;
         while (*begin != '[')
             ++begin;
         while (*end != ']')
